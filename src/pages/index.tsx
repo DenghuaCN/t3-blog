@@ -54,7 +54,7 @@ const HomePage = () => {
       </header>
 
       {/* 左栏 Main Screen */}
-      <section className="grid h-full w-full grid-cols-12 place-items-center">
+      <section className="grid h-full w-full grid-cols-12">
         {/* 主内容 */}
         <main className="col-span-8 h-full w-full border-r border-gray-300 px-24">
           {/* 主内容header（搜索，筛选...） */}
@@ -185,7 +185,7 @@ const HomePage = () => {
         </main>
 
         {/* 右栏 */}
-        <aside className="sticky top-20 col-span-4 flex h-full w-full flex-col space-y-4 p-6">
+        <aside className="col-span-4 flex h-full w-full flex-col space-y-4 p-6">
           {/* 可能感兴趣的用户 */}
           <div>
             <h3 className="my-6 text-lg font-semibold">
@@ -229,7 +229,7 @@ const HomePage = () => {
             </div>
           </div>
           {/* 阅读列表 */}
-          <div>
+          <div className="sticky top-2">
             <h3 className="my-6 text-lg font-semibold">Your reading list</h3>
             <div className="flex flex-col space-y-8">
               {Array.from({ length: 4 }).map((_, i) => (
