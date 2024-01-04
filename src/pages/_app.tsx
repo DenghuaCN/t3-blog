@@ -3,8 +3,10 @@ import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
 import { trpc } from "../utils/trpc";
+import GlobalContextProvider from "../components/contexts/GlobalContextProvider";
 
 import "../styles/globals.css";
+
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -12,7 +14,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+      {/* 全局Context注入 */}
+      <GlobalContextProvider>
+        <Component {...pageProps} />
+      </GlobalContextProvider>
     </SessionProvider>
   );
 };

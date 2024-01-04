@@ -1,15 +1,19 @@
-import { IoReorderThreeOutline } from "react-icons/io5";
+import { useContext } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 
+import { IoReorderThreeOutline } from "react-icons/io5";
 import { BsBell } from "react-icons/bs";
 import { FiEdit, FiLogOut } from "react-icons/fi";
+
+import { GlobalContext } from "../../components/contexts/GlobalContextProvider";
 
 
 const MainLayout = ({ children }: React.PropsWithChildren) => {
 
-
   // https://next-auth.js.org/getting-started/client#usesession
   const { data: sessionData, status } = useSession()
+
+  const { setIsWriteModalOpen } = useContext(GlobalContext);
 
 
   return (
@@ -39,7 +43,10 @@ const MainLayout = ({ children }: React.PropsWithChildren) => {
             </div>
             {/* Write */}
             <div>
-              <button className="flex items-center space-x-3 rounded border border-gray-200 px-4 py-2 transition hover:border-gray-900 hover:text-gray-900">
+              <button
+                onClick={() => setIsWriteModalOpen(true)}
+                className="flex items-center space-x-3 rounded border border-gray-200 px-4 py-2 transition hover:border-gray-900 hover:text-gray-900"
+              >
                 <div>Write</div>
                 <div>
                   <FiEdit className="text-gray-600" />
