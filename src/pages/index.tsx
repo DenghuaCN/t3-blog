@@ -1,57 +1,17 @@
-import { IoReorderThreeOutline } from "react-icons/io5";
-import { BsBell } from "react-icons/bs";
-import { FiEdit } from "react-icons/fi";
+import { useSession } from "next-auth/react";
+
 import { CiSearch } from "react-icons/ci";
 import { HiChevronDown } from "react-icons/hi";
 
+import MainLayout from "../layouts/MainLayout";
+
+
 const HomePage = () => {
+
+  const { data: sessionData, status } = useSession();
+
   return (
-    <div className="flex h-full w-full flex-col">
-      {/* Header */}
-      <header className="flex h-20 w-full flex-row items-center justify-around border-b-[1px] border-gray-300 bg-white">
-        {/* Left More */}
-        <div>
-          <IoReorderThreeOutline className="text-2xl text-gray-600" />
-        </div>
-
-        {/* Center Title */}
-        <div className="text-xl font-thin">denghua blog app</div>
-
-        {/* Right Operator */}
-        <div className="flex items-center space-x-4">
-          {/* Notification */}
-          <div>
-            <BsBell className="text-2xl text-gray-600" />
-          </div>
-          {/* Account */}
-          <div>
-            <div className="h-5 w-5 rounded-full bg-gray-600"></div>
-          </div>
-          {/* Write */}
-          <div>
-            <button
-              className="
-                flex
-                items-center
-                space-x-3
-                rounded
-                border
-                border-gray-200
-                px-4
-                py-2
-                transition
-                hover:border-gray-900
-                hover:text-gray-900
-              "
-            >
-              <div>Write</div>
-              <div>
-                <FiEdit className="text-gray-600" />
-              </div>
-            </button>
-          </div>
-        </div>
-      </header>
+    <MainLayout>
 
       {/* 左栏 Main Screen */}
       <section className="grid h-full w-full grid-cols-12">
@@ -254,7 +214,7 @@ const HomePage = () => {
           </div>
         </aside>
       </section>
-    </div>
+    </MainLayout>
   );
 };
 
