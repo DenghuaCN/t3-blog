@@ -84,13 +84,15 @@ model Post {
   authorId      String
   author        User   @relation(fields: [authorId], references: [id]) // Post始终有一个作者
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
   tags          Tag[]       // Post表 多对多 Tag表  多 对 多
   comments      Comment[]   // 一个post可以有多个comment 1 对 多
   likes         Like[]      // 一个post可以有多个like 1 对 多
   bookmarks     Bookmark[]  // 一个post可以被多个用户添加书签 1 对 多
+
+  isPublished   Boolean?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // 标签
