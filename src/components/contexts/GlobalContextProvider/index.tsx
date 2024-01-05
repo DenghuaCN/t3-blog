@@ -6,7 +6,6 @@ type GlobalContextType = {
   setIsWriteModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 };
 
-export const GlobalContext = createContext<GlobalContextType>(null as unknown as GlobalContextType) // 类型断言 神操作
 
 const GlobalContextProvider = ({ children }: React.PropsWithChildren) => {
 
@@ -19,4 +18,6 @@ const GlobalContextProvider = ({ children }: React.PropsWithChildren) => {
   );
 }
 
+
+export const GlobalContext = createContext<GlobalContextType>(null as unknown as GlobalContextType) // 类型断言 神操作
 export default GlobalContextProvider;
