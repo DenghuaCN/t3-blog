@@ -78,8 +78,8 @@ model Post {
   slug          String
   featuredImage String? // 图片可为空
 
-  html          String @db.Text
-  text          String @db.Text
+  html          String? @db.Text
+  text          String? @db.Text
 
   authorId      String
   author        User   @relation(fields: [authorId], references: [id]) // Post始终有一个作者

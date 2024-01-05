@@ -5,17 +5,18 @@ import { z } from 'zod';
 
 import Modal from "../Modal";
 import { GlobalContext } from "../contexts/GlobalContextProvider";
+import { trpc } from "../../utils/trpc";
 
 type WriteFormType = {
   title: string;
   description: string;
-  body: string;
+  text: string;
 }
 
-const writeFormSchema = z.object({
+export const writeFormSchema = z.object({
   title: z.string().min(20),
   description: z.string().min(60),
-  body: z.string().min(100)
+  text: z.string().min(100)
 })
 
 const WriteFormModal = () => {
@@ -28,13 +29,21 @@ const WriteFormModal = () => {
   });
 
 
+  /**
+   * @desc 创建tRPC方法
+   */
+  const createPost = trpc.post.createPost.useMutation({
+    onSuccess: () => {
+      console.log('post created successfully');
+    }
+  })
 
   /**
    * @description handleSubmit回调函数，从参数中获取表单输入对象
    * @param data
    */
   const onSubmit = (data: WriteFormType) => {
-    console.log(data);
+    createPost.mutate(data)
   }
 
 
@@ -83,8 +92,8 @@ const WriteFormModal = () => {
         <p className="w-full text-left text-sm text-red-500 pb-2">{errors.description?.message}</p>
 
         <textarea
-          {...register('body')}
-          name="body"
+          {...register('text')}
+          name="text"
           placeholder="blog main body..."
           cols={10}
           rows={10}
@@ -99,7 +108,7 @@ const WriteFormModal = () => {
             rounded-xl
           "
         />
-        <p className="w-full text-left text-sm text-red-500 pb-2">{errors.body?.message}</p>
+        <p className="w-full text-left text-sm text-red-500 pb-2">{errors.text?.message}</p>
 
 
         <div className="flex justify-end w-full">
