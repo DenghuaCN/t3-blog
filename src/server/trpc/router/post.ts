@@ -9,6 +9,7 @@ import { TRPCError } from '@trpc/server';
 
 
 export const postRouter = router({
+  // 创建Post
   createPost: protectedProcedure
     .input(writeFormSchema)
     .mutation(async ({ ctx, input }) => {
@@ -48,7 +49,32 @@ export const postRouter = router({
           }
         }
       })
+    }
+    ),
 
+  /**
+   * @desc 获取所有Post
+   * 此过程不需要protected，故使用publicProcedure
+   */
+  getPosts: publicProcedure
+    .query(async ({ ctx }) => {
 
-    })
+      const { prisma } = ctx;
+      const posts = await prisma.post.findMany({
+        orderBy: {
+          createdAt: "desc"
+        },
+        include: {
+          author: {
+            select: {
+              name: true,
+              image: true,
+            }
+          }
+        }
+      });
+
+      return posts;
+    }
+    )
 })

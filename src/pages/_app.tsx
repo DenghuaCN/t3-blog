@@ -1,6 +1,7 @@
 import { type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from 'react-hot-toast';
 
 import { trpc } from "../utils/trpc";
 import GlobalContextProvider from "../components/contexts/GlobalContextProvider";
@@ -14,6 +15,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
+      {/* react-hot-toast全局 */}
+      <Toaster />
       {/* 全局Context注入 */}
       <GlobalContextProvider>
         <Component {...pageProps} />

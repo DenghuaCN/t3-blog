@@ -1,7 +1,10 @@
 import { useContext } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod"
+import toast from "react-hot-toast";
 import { z } from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod"
+
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Modal from "../Modal";
 import { GlobalContext } from "../contexts/GlobalContextProvider";
@@ -15,26 +18,33 @@ type WriteFormType = {
 
 export const writeFormSchema = z.object({
   title: z.string().min(20),
-  description: z.string().min(60),
+  description: z.string().min(50),
   text: z.string().min(100)
 })
 
 const WriteFormModal = () => {
 
+  // Modal Context
   const { isWriteModalOpen, setIsWriteModalOpen } = useContext(GlobalContext);
 
-  // errors为二次解构
-  const { register, handleSubmit, formState: { errors } } = useForm<WriteFormType>({
+  // react-hook-form (errors为二次解构)
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<WriteFormType>({
     resolver: zodResolver(writeFormSchema)
   });
 
+
+  const utils = trpc.useUtils();
 
   /**
    * @desc 创建tRPC方法
    */
   const createPost = trpc.post.createPost.useMutation({
     onSuccess: () => {
-      console.log('post created successfully');
+      toast.success('post created successfully!')
+      setIsWriteModalOpen(false);
+      reset();
+      // Invalidating a single query，立即获取最新数据
+      utils.post.getPosts.invalidate();
     }
   })
 
@@ -55,8 +65,18 @@ const WriteFormModal = () => {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col space-y-4 justify-center items-center"
+        className="flex relative flex-col space-y-4 justify-center items-center"
       >
+
+        {/* loading */}
+        {createPost.isLoading && (
+          <div className="absolute w-full h-full flex items-center justify-center">
+            <div>
+              <AiOutlineLoading3Quarters className="animate-spin" />
+            </div>
+          </div>
+        )}
+
         <input
           {...register('title')}
           type="text"

@@ -13,13 +13,8 @@ const t = initTRPC.context<Context>().create({
 export const router = t.router;
 
 /**
- * Unprotected procedure
- **/
-export const publicProcedure = t.procedure;
-
-/**
- * Reusable middleware to ensure
- * users are logged in
+ * @desc 登陆校验 中间件
+ * Reusable middleware to ensure users are logged in
  */
 const isAuthed = t.middleware(({ ctx, next }) => {
   if (!ctx.session || !ctx.session.user) {
@@ -35,5 +30,12 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 
 /**
  * Protected procedure
- **/
+ * @desc 会走isAuthed中间件，此procedure收到保护
+ */
 export const protectedProcedure = t.procedure.use(isAuthed);
+
+/**
+ * Unprotected procedure
+ * @desc 此procedure不受保护
+ */
+export const publicProcedure = t.procedure;

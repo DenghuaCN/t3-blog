@@ -1,11 +1,19 @@
+import Image from "next/image";
+
 import { CiSearch } from "react-icons/ci";
 import { HiChevronDown } from "react-icons/hi";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
+import { trpc } from "../utils/trpc";
 import MainLayout from "../layouts/MainLayout";
 import WriteFormModal from "../components/WriteFormModal";
+import dayjs from "dayjs";
+
 
 
 const HomePage = () => {
+
+  const getPosts = trpc.post.getPosts.useQuery();
 
   return (
     <MainLayout>
@@ -85,17 +93,36 @@ const HomePage = () => {
 
           {/* 博文内容 ExcelRow */}
           <div className="flex w-full flex-col justify-center space-y-8">
-            {Array.from({ length: 5 }).map((_, i) => (
+
+            {/* Loaning */}
+            {getPosts.isLoading && (
+              <div className="w-full h-full flex items-center justify-center space-x-4">
+                <div><AiOutlineLoading3Quarters className="animate-spin" /></div>
+                <div>loading...</div>
+              </div>
+            )}
+
+            { getPosts.isSuccess && getPosts.data.map((post) => (
               <div
-                key={i}
+                key={post.id}
                 className="group flex flex-col space-y-4 border-b border-gray-300 pb-8 last:border-none"
               >
                 {/* 博文简介 */}
                 <div className="flex w-full items-center space-x-2">
-                  <div className="h-10 w-10 rounded-full bg-gray-400"></div>
+                  <div className="relative h-10 w-10 rounded-full bg-gray-400">
+                    {post.author.image && (
+                      <Image
+                        fill
+                        className="rounded-full"
+                        src={post.author.image}
+                        alt={post.author.name ?? ''}
+                      />
+                    )}
+                  </div>
                   <div>
                     <p className="font-semibold">
-                      John Soni &#x2022; 22 Dec. 2022
+                      {post.author.name} &#x2022;
+                      <span className="mx-1">{dayjs(post.createdAt).format('YYYY-MM-DD')}</span>
                     </p>
                     <p className="text-sm">Founder, teacher & developer</p>
                   </div>
@@ -106,12 +133,11 @@ const HomePage = () => {
                   <div className="col-span-8 flex flex-col space-y-4">
                     {/* 标题 */}
                     <p className="text-2xl font-bold text-gray-800 decoration-gray-800 group-hover:underline">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                      Nisi, quaerat.
+                      {post.title}
                     </p>
                     {/* 主内容 */}
                     <p className="break-words text-sm text-gray-500">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia molestias at adipisci dolore necessitatibus amet sapiente, consequuntur iure cum, molestiae explicabo cupiditate corrupti beatae vel, corporis harum dolor laborum ab tempora quis aut accusamus voluptatem porro! Nemo incidunt ipsa ea error unde, ullam, officia reprehenderit quisquam iste id veniam aspernatur iusto libero, velit quos alias quae corrupti quod? Odit, excepturi.
+                      {post.text}
                     </p>
                   </div>
                   {/* 标题图 */}
