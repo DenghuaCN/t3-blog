@@ -1,8 +1,7 @@
 // post.ts用于处理Post相关操作的路由
-
+import { z } from 'zod';
 import slugify from 'slugify';
 
-import { prisma } from '../../db/client';
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { writeFormSchema } from "../../../components/WriteFormModal";
 import { TRPCError } from '@trpc/server';
@@ -13,7 +12,6 @@ export const postRouter = router({
   createPost: protectedProcedure
     .input(writeFormSchema)
     .mutation(async ({ ctx, input }) => {
-
       const { prisma, session } = ctx;
       const { title, description, text } = input;
 
@@ -24,15 +22,12 @@ export const postRouter = router({
         }
       });
       console.log('isExistSamePost', isExistSamePost);
-
-
       if (isExistSamePost) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "post with this title already exists!"
         })
       }
-
 
       await prisma.post.create({
         data: {
@@ -58,7 +53,6 @@ export const postRouter = router({
    */
   getPosts: publicProcedure
     .query(async ({ ctx }) => {
-
       const { prisma } = ctx;
       const posts = await prisma.post.findMany({
         orderBy: {
@@ -76,5 +70,28 @@ export const postRouter = router({
 
       return posts;
     }
+    ),
+
+  /**
+   * @desc 获取单个post
+   */
+  getPost: publicProcedure
+    .input(
+      z.object({
+        id: z.string()
+      })
     )
+    .query(async ({ ctx, input }) => {
+      const { prisma } = ctx;
+      const { id } = input;
+
+      const post = await prisma.post.findUnique({
+        where: {
+          id
+        }
+      })
+
+      return post;
+    }
+  )
 })

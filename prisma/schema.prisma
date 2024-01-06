@@ -75,7 +75,7 @@ model Post {
   id            String  @id @default(cuid())
   title         String  @unique // 唯一标识符，title不能冲突，且需要作为slug
   description   String
-  slug          String
+  slug          String  @unique
   featuredImage String? // 图片可为空
 
   html          String? @db.Text

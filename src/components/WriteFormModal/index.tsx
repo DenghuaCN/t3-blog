@@ -16,6 +16,10 @@ type WriteFormType = {
   text: string;
 }
 
+/**
+ * @desc 使用zod进行运行时的类型检查
+ * https://dev.to/jareechang/zod-the-next-biggest-thing-after-typescript-4phh
+ */
 export const writeFormSchema = z.object({
   title: z.string().min(20),
   description: z.string().min(50),

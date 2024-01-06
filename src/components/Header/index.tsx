@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useContext } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 
@@ -21,7 +22,7 @@ const Header = () => {
       </div>
 
       {/* Center Title */}
-      <div className="text-xl font-thin">denghua blog app</div>
+      <Link href={'/'} className="text-xl font-thin select-none cursor-pointer">Denghua Blog App</Link>
 
       {/* 区分登陆态显示 */}
       {status === 'authenticated' ? (
