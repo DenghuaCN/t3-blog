@@ -1,7 +1,8 @@
+import { useCallback } from "react";
 import { useRouter } from "next/router";
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FcLike } from "react-icons/fc";
+import { FcLike, FcLikePlaceholder } from "react-icons/fc";
 import { BsChat } from "react-icons/bs";
 
 import { trpc } from "../utils/trpc";
@@ -10,15 +11,51 @@ import MainLayout from "../layouts/MainLayout";
 
 const PostPage = () => {
   const router = useRouter();
+  const utils = trpc.useUtils();
 
-  const postId = router.query.id as string;
 
-  const getPost = trpc.post.getPost.useQuery({
-    id: postId
-  }, {
-    // 此查询只有当router.query.id为有效值的时候才进行
-    enabled: Boolean(router.query.id)
+  /**
+   * @desc 获取Post
+   */
+  const getPost = trpc.post.getPost.useQuery(
+    { id: router.query.id as string },
+    {
+      enabled: Boolean(router.query.id),
+    } // 此查询只有当router.query.id为有效值的时候才进行
+  )
+
+  console.log('getPost', getPost);
+
+
+  /**
+   * @desc 点赞
+   */
+  const likePost = trpc.post.likePost.useMutation({
+    onSuccess: () => {
+      console.log('like success')
+      invalidateCurrentPage()
+    }
   })
+
+
+  /**
+   * @desc 取消点赞
+   */
+  const disLikePost = trpc.post.disLikePost.useMutation({
+    onSuccess: () => {
+      console.log('dislike success')
+      invalidateCurrentPage()
+    }
+  })
+
+  /**
+   * @desc 点赞或取消点赞后立即获取Post
+   */
+  const invalidateCurrentPage = useCallback(() => {
+    utils.post.getPost.invalidate({
+      id: router.query.id as string
+    });
+  }, [router.query.id, utils.post.getPost])
 
 
   return (
@@ -32,12 +69,28 @@ const PostPage = () => {
         </div>
       )}
 
-      {/* getPost接口成功调用后显示"点赞评论”组件 */}
+      {/* getPost接口成功后显示"点赞评论”组件 */}
       {getPost.isSuccess && (
-        <div className="fixed bottom-10 flex justify-center items-center w-full align">
-          <div className="rounded-full px-4 py-2 border border-gray-300 hover:border-gray-900 flex justify-center items-center space-x-4 group transition duration-300">
+        <div className="fixed bottom-10 flex justify-center items-center w-full">
+          <div className="bg-white rounded-full px-4 py-2 border border-gray-300 hover:border-gray-900 flex justify-center items-center space-x-4 group transition duration-300">
             <div className="border-r pr-4 group-hover:border-gray-900 transition duration-300">
-              <FcLike className="text-2xl" />
+
+              {getPost.data?.likes.length && getPost.data.likes.length > 0 ? (
+                <FcLike
+                  className="text-2xl cursor-pointer"
+                  onClick={() => getPost.data?.id && disLikePost.mutate({ postId: getPost.data?.id })}
+                />
+              ) : (
+                <FcLikePlaceholder
+                  className="text-2xl cursor-pointer"
+                  /**
+                   * 只有此postId有效时才能进行点赞操作,但由于点击前需要进行getPost查询，
+                   * 在getPost查询中增加select。具体见getPost接口
+                   */
+                  onClick={() => getPost.data?.id && likePost.mutate({ postId: getPost.data?.id })}
+                />
+              )}
+
             </div>
             <div>
               <BsChat className="text-xl" />

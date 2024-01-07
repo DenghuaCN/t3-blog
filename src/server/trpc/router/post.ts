@@ -8,7 +8,9 @@ import { TRPCError } from '@trpc/server';
 
 
 export const postRouter = router({
-  // 创建Post
+  /**
+   * @desc 创建Post
+   */
   createPost: protectedProcedure
     .input(writeFormSchema)
     .mutation(async ({ ctx, input }) => {
@@ -82,16 +84,71 @@ export const postRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const { prisma } = ctx;
+      const { prisma, session } = ctx;
       const { id } = input;
 
       const post = await prisma.post.findUnique({
         where: {
           id
+        },
+        select: {
+          id: true,
+          description: true,
+          title: true,
+          text: true,
+          likes: session?.user?.id ? {
+            /**
+             * 用户已登陆时才会获取likes字段信息，减少查询
+             */
+            where: {
+              userId: session?.user?.id
+            }
+          } : false
         }
       })
 
       return post;
+    }
+    ),
+
+
+  /**
+   * @desc like post
+   */
+  likePost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string()
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session }, input: { postId } }) => {
+      await prisma.like.create({
+        data: {
+          userId: session.user.id,
+          postId
+        }
+      })
+    }
+    ),
+
+  /**
+   * @desc unlike
+   */
+  disLikePost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string()
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session }, input: { postId } }) => {
+      await prisma.like.delete({
+        where: {
+          userId_postId: {
+            postId,
+            userId: session.user.id
+          }
+        }
+      })
     }
   )
 })
