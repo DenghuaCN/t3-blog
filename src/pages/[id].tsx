@@ -1,6 +1,8 @@
 import { useRouter } from "next/router";
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FcLike } from "react-icons/fc";
+import { BsChat } from "react-icons/bs";
 
 import { trpc } from "../utils/trpc";
 import MainLayout from "../layouts/MainLayout";
@@ -22,13 +24,27 @@ const PostPage = () => {
   return (
     <MainLayout>
 
-        {/* Loaning */}
-        {getPost.isLoading && (
-          <div className="w-full h-full flex items-center justify-center space-x-4">
-            <div><AiOutlineLoading3Quarters className="animate-spin" /></div>
-            <div>loading...</div>
+      {/* Loaning */}
+      {getPost.isLoading && (
+        <div className="w-full h-full flex items-center justify-center space-x-4">
+          <div><AiOutlineLoading3Quarters className="animate-spin" /></div>
+          <div>loading...</div>
+        </div>
+      )}
+
+      {/* getPost接口成功调用后显示"点赞评论”组件 */}
+      {getPost.isSuccess && (
+        <div className="fixed bottom-10 flex justify-center items-center w-full align">
+          <div className="rounded-full px-4 py-2 border border-gray-300 hover:border-gray-900 flex justify-center items-center space-x-4 group transition duration-300">
+            <div className="border-r pr-4 group-hover:border-gray-900 transition duration-300">
+              <FcLike className="text-2xl" />
+            </div>
+            <div>
+              <BsChat className="text-xl" />
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
       <div className="flex h-full w-full flex-col items-center justify-center p-10">
         <div className="w-full max-w-screen-lg flex flex-col space-y-6">
