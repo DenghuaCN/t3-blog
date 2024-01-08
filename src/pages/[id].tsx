@@ -24,8 +24,6 @@ const PostPage = () => {
     } // 此查询只有当router.query.id为有效值的时候才进行
   )
 
-  console.log('getPost', getPost);
-
 
   /**
    * @desc 点赞

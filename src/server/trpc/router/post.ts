@@ -55,18 +55,51 @@ export const postRouter = router({
    */
   getPosts: publicProcedure
     .query(async ({ ctx }) => {
-      const { prisma } = ctx;
+      const { prisma, session } = ctx;
       const posts = await prisma.post.findMany({
         orderBy: {
           createdAt: "desc"
         },
-        include: {
+        /**
+         * https://www.prisma.io/docs/orm/prisma-client/queries/select-fields
+         * https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#nested-reads
+         * https://stackoverflow.com/questions/69679956/nestjs-prisma-orm-using-select-versus-include-when-fetching-data-records
+         *
+         * select可以返回特定字段 (允许您返回有限的字段子集而不是所有字段：)
+         * include包含关系查询 (允许您返回部分或全部关系字段)
+         * 例: 返回post表中所有标量字段，并且返回'author'表中的'name'和'image'字段
+         * 如果将author: true，则表示post表所有标量字段 AND author表中所有非关系字段
+         * include: {
+         *   author: {
+         *     select: {
+         *       name: true,
+         *       image: true,
+         *     }
+         *   },
+         * },
+         */
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          text: true,
+          createdAt: true,
           author: {
             select: {
               name: true,
               image: true,
             }
-          }
+          },
+          /**
+           * 返回当前用户ID的bookmarks字段，查询只针对当前登陆用户，缩小查询范围。如果当前用户不存在，则不查询bookmarks字段
+           * 如果bookmarks:true，则表示返回所有为此post增加了bookmark的用户
+           */
+          bookmarks: session?.user?.id ? {
+            where: {
+              userId: session?.user?.id
+            }
+          } : false,
         }
       });
 
@@ -150,5 +183,46 @@ export const postRouter = router({
         }
       })
     }
-  )
+  ),
+
+  /**
+   * @desc 对帖子加入书签
+   */
+  bookmarkPost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string()
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session }, input: { postId } }) => {
+      await prisma.bookmark.create({
+        data: {
+          postId,
+          userId: session.user.id
+        }
+      })
+    }
+  ),
+
+  /**
+   * @desc 对帖子取消书签
+   */
+  removeBookmark: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string()
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session }, input: { postId } }) => {
+      await prisma.bookmark.delete({
+        where: {
+          userId_postId: {
+            postId,
+            userId: session.user.id
+          }
+        }
+      })
+    }
+  ),
+
 })
