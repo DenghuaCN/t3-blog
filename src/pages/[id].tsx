@@ -73,7 +73,7 @@ const PostPage = () => {
           <div className="bg-white rounded-full px-4 py-2 border border-gray-300 hover:border-gray-900 flex justify-center items-center space-x-4 group transition duration-300">
             <div className="border-r pr-4 group-hover:border-gray-900 transition duration-300">
 
-              {postData?.likes.length && postData.likes.length > 0 ? (
+              {postData?.likes?.length && postData.likes.length > 0 ? (
                 <FcLike
                   className="text-2xl cursor-pointer"
                   onClick={() => postData?.id && disLikePost.mutate({ postId: postData?.id })}

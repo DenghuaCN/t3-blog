@@ -1,8 +1,10 @@
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import dayjs from "dayjs";
 import Link from "next/link";
 import Image from "next/image";
+import toast from "react-hot-toast";
+
 
 import { CiBookmarkPlus } from "react-icons/ci";
 import { CiBookmarkCheck } from "react-icons/ci";
@@ -15,16 +17,44 @@ type PostProps = RouterOutputs['post']['getPosts'][number]
 
 
 const Post = ({ ...post }: PostProps) => {
+  const [isBookMarked, setIsBookMarked] = useState(Boolean(post.bookmarks?.length));
 
-  const [isBookMarked, setIsBookMarked] = useState(Boolean(post.bookmarks.length));
+  const addBookmarkRPC = trpc.post.bookmarkPost.useMutation();
+  const removeBookmarkRPC = trpc.post.removeBookmark.useMutation();
 
-  const { mutate: bookmarkMutate } = trpc.post.bookmarkPost.useMutation({
-    onSuccess: () => setIsBookMarked((prev) => !prev)
-  });
 
-  const removeBookmark = trpc.post.removeBookmark.useMutation({
-    onSuccess: () => setIsBookMarked((prev) => !prev)
-  });
+  /**
+   * @desc 添加书签
+   */
+  const handleAddBookmark = () => {
+    const addBookmarkPromise = addBookmarkRPC.mutateAsync({ postId: post.id });
+
+    toast.promise(addBookmarkPromise, {
+      loading: 'Loading...',
+      success: () => {
+        setIsBookMarked((prev) => !prev)
+        return '书签已添加'
+      },
+      error: 'add bookmark fail',
+    })
+  }
+
+  /**
+   * @desc 移除书签
+   */
+  const handleRemoveBookmark = () => {
+    const removeBookmarkPromise = removeBookmarkRPC.mutateAsync({ postId: post.id })
+
+    toast.promise(removeBookmarkPromise, {
+      loading: 'Loading...',
+      success: () => {
+        setIsBookMarked((prev) => !prev)
+        return '书签已移除'
+      },
+      error: 'remove bookmark fail',
+    })
+  }
+
 
   return (
     <div
@@ -92,12 +122,12 @@ const Post = ({ ...post }: PostProps) => {
             {isBookMarked ? (
               <CiBookmarkCheck
                 className="text-2xl cursor-pointer text-indigo-600"
-                onClick={() => removeBookmark.mutate({ postId: post.id })}
+                onClick={handleRemoveBookmark}
               />
             ) : (
               <CiBookmarkPlus
                 className="text-2xl cursor-pointer"
-                onClick={() => bookmarkMutate({ postId: post.id })}
+                onClick={handleAddBookmark}
               />
             )}
           </div>
