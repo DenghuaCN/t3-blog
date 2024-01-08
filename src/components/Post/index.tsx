@@ -15,12 +15,13 @@ type PostProps = RouterOutputs['post']['getPosts'][number]
 
 
 const Post = ({ ...post }: PostProps) => {
+
   const [isBookMarked, setIsBookMarked] = useState(Boolean(post.bookmarks.length));
 
-  // todo: 使用react-query改写
-  const bookmarkPost = trpc.post.bookmarkPost.useMutation({
+  const { mutate: bookmarkMutate } = trpc.post.bookmarkPost.useMutation({
     onSuccess: () => setIsBookMarked((prev) => !prev)
   });
+
   const removeBookmark = trpc.post.removeBookmark.useMutation({
     onSuccess: () => setIsBookMarked((prev) => !prev)
   });
@@ -96,7 +97,7 @@ const Post = ({ ...post }: PostProps) => {
             ) : (
               <CiBookmarkPlus
                 className="text-2xl cursor-pointer"
-                onClick={() => bookmarkPost.mutate({ postId: post.id })}
+                onClick={() => bookmarkMutate({ postId: post.id })}
               />
             )}
           </div>

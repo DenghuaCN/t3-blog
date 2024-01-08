@@ -17,10 +17,12 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       {/* react-hot-toast全局 */}
       <Toaster />
-      {/* 全局Context注入 */}
+
+      {/* Modal */}
       <GlobalContextProvider>
         <Component {...pageProps} />
       </GlobalContextProvider>
+
     </SessionProvider>
   );
 };
