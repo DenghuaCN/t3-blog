@@ -108,7 +108,7 @@ model Tag {
 // 评论
 model Comment {
   id          String @id @default(cuid())
-  text        String
+  text        String @db.Text
 
   userId      String
   user        User @relation(fields: [userId], references: [id]) // 一个comment始终有一个user

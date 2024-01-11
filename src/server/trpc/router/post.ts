@@ -2,9 +2,10 @@
 import { z } from 'zod';
 import slugify from 'slugify';
 
+import { TRPCError } from '@trpc/server';
+
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { writeFormSchema } from "../../../components/WriteFormModal";
-import { TRPCError } from '@trpc/server';
 
 
 export const postRouter = router({
@@ -183,7 +184,7 @@ export const postRouter = router({
         }
       })
     }
-  ),
+    ),
 
   /**
    * @desc 对帖子加入书签
@@ -202,7 +203,7 @@ export const postRouter = router({
         }
       })
     }
-  ),
+    ),
 
   /**
    * @desc 对帖子取消书签
@@ -223,6 +224,74 @@ export const postRouter = router({
         }
       })
     }
-  ),
+    ),
 
+
+  /**
+   * @desc 添加评论
+   */
+  submitComment: protectedProcedure
+    .input(
+      z.object({
+        text: z.string().min(3),
+        postId: z.string()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { prisma, session } = ctx;
+      const { text, postId } = input;
+
+      await prisma.comment.create({
+        data: {
+          text,
+          user: {
+            connect: {
+              id: session.user.id
+            }
+          },
+          post: {
+            connect: {
+              id: postId
+            }
+          }
+        }
+      })
+    }
+    ),
+
+
+  /**
+   * @desc 获取所有评论
+   */
+  getComments: publicProcedure
+    .input(
+      z.object({
+        postId: z.string()
+      })
+    )
+    .query(async ({ ctx: { prisma }, input }) => {
+      const { postId } = input;
+
+      const comments = await prisma.comment.findMany({
+        where: {
+          postId
+        },
+        select: {
+          id: true,
+          text: true,
+          user: {
+            select: {
+              name: true,
+              image: true
+            }
+          },
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+
+      return comments;
+    })
 })
