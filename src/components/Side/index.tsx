@@ -1,4 +1,16 @@
+import Link from "next/link";
+import Image from 'next/image';
+import dayjs from 'dayjs';
+
+import { trpc } from "../../utils/trpc";
+
 const Side = () => {
+
+  /**
+   * @desc tRPC调用‘getReadingList’过程
+   */
+  const readingList = trpc.post.getReadingList.useQuery();
+
   return (
     <aside className="col-span-4 flex h-full w-full flex-col space-y-4 p-6">
       {/* 可能感兴趣的用户 */}
@@ -47,23 +59,42 @@ const Side = () => {
       <div className="sticky top-2">
         <h3 className="my-6 text-lg font-semibold">Your reading list</h3>
         <div className="flex flex-col space-y-8">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="group flex items-center space-x-6">
+          {readingList.isSuccess && readingList.data.map((bookmark) => (
+            <Link
+              href={`/${bookmark.post.id}`}
+              key={bookmark.id}
+              className="group flex items-center space-x-6"
+            >
+              {/* article cover */}
               <div className="aspect-square h-full w-2/5 rounded-xl bg-gray-300"></div>
               <div className="flex w-3/5 flex-col space-y-2">
+                {/* title */}
                 <div className="text-lg font-semibold decoration-gray-800 group-hover:underline">
-                  Lorem ipsum dolor sit amet consectetur.
+                  {bookmark.post.title}
                 </div>
-                <div className="break-words">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde, aut.
-                </div>
+                {/* description */}
+                <div className="truncate">{bookmark.post.description}</div>
                 <div className="flex w-full items-center space-x-4">
-                  <div className="h-8 w-8 rounded-full bg-gray-300"></div>
-                  <div className="">John Doe &#x2022;</div>
-                  <div>Dec 22, 2022</div>
+                  {/* Avatar */}
+                  <div className="relative h-8 w-8 rounded-full ">
+                    {bookmark.post.author.image && (
+                      <Image
+                        fill
+                        // width="32"
+                        // height="32"
+                        className="rounded-full"
+                        src={bookmark.post.author.image}
+                        alt={bookmark.post.author.name ?? ''}
+                      />
+                    )}
+                  </div>
+                  {/* username */}
+                  <div>{bookmark.post.author.name} &#x2022;</div>
+                  {/* created time */}
+                  <div>{dayjs(bookmark.post.createdAt).format('YYYY-MM-DD')}</div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

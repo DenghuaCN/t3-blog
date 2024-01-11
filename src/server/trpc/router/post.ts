@@ -293,5 +293,41 @@ export const postRouter = router({
       })
 
       return comments;
+    }
+    ),
+
+  /**
+   * @desc 获取阅读列表
+   */
+  getReadingList: protectedProcedure
+    .query(async ({ ctx: { prisma, session } }) => {
+      const allBookmarks = await prisma.bookmark.findMany({
+        where: {
+          userId: session.user.id
+        },
+        take: 4,
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true, // 返回bookmark表的id字段
+          post: {
+            select: { // 选择post表中的title,description,createdAt字段
+              id: true,
+              title: true,
+              description: true,
+              createdAt: true,
+              author: { // 选择user表(author关系)中的name和image字段
+                select: {
+                  name: true,
+                  image: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      return allBookmarks;
     })
 })
