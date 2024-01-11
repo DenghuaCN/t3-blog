@@ -90,6 +90,7 @@ export const postRouter = router({
             select: {
               name: true,
               image: true,
+              username: true
             }
           },
           /**

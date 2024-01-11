@@ -5,9 +5,9 @@ import { BsChat } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FcLike, FcLikePlaceholder } from "react-icons/fc";
 
-import { trpc } from "../utils/trpc";
-import MainLayout from "../layouts/MainLayout";
-import CommentSidebar from "../components/CommentSidebar";
+import { trpc } from "../../utils/trpc";
+import MainLayout from "../../layouts/MainLayout";
+import CommentSidebar from "../../components/CommentSidebar";
 
 const PostPage = () => {
   const router = useRouter();
@@ -19,10 +19,10 @@ const PostPage = () => {
    * @desc 获取Post
    */
   const { data: postData, isSuccess, isLoading } = trpc.post.getPost.useQuery(
-    { id: router.query.id as string },
+    { id: router.query.postId as string },
     {
-      enabled: Boolean(router.query.id),
-    } // 此查询只有当router.query.id为有效值的时候才进行
+      enabled: Boolean(router.query.postId),
+    } // 此查询只有当router.query.postId为有效值的时候才进行
   )
 
   /**
@@ -50,9 +50,9 @@ const PostPage = () => {
    */
   const invalidateCurrentPage = useCallback(() => {
     utils.post.getPost.invalidate({
-      id: router.query.id as string
+      id: router.query.postId as string
     });
-  }, [router.query.id, utils.post.getPost])
+  }, [router.query.postId, utils.post.getPost])
 
 
   return (

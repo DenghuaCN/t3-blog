@@ -61,7 +61,7 @@ const Side = () => {
         <div className="flex flex-col space-y-8">
           {readingList.isSuccess && readingList.data.map((bookmark) => (
             <Link
-              href={`/${bookmark.post.id}`}
+              href={`/posts/${bookmark.post.id}`}
               key={bookmark.id}
               className="group flex items-center space-x-6"
             >
