@@ -1,9 +1,13 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { BiEdit } from "react-icons/bi";
+import toast from "react-hot-toast";
 
-import MainLayout from "../../layouts/MainLayout";
+import { BiEdit } from "react-icons/bi";
+import { SlShareAlt } from 'react-icons/sl'
+
 import { trpc } from "../../utils/trpc";
+import MainLayout from "../../layouts/MainLayout";
+import Post from "../../components/Post";
 
 
 
@@ -20,39 +24,77 @@ const UserProfilePage = () => {
     enabled: Boolean(router.query.username) // 页面首次加载时username为未定义，此时不发出请求
   });
 
+
+  /**
+   * @desc 获取用户所有post
+   */
+  const userPosts = trpc.user.getUserPosts.useQuery({
+    username: router.query.username as string
+  }, {
+    enabled: Boolean(router.query.username)
+  });
+
   return (
     <MainLayout>
       <div className="flex h-full w-full items-center justify-center">
-        <div className="lg:max-w-screen-md xl:max-w-screen-lg w-full h-full my-10 flex flex-col justify-center items-center">
-          <div className="relative w-full h-44 rounded-3xl bg-gradient-to-r from-violet-200 to-pink-200">
-            <div className="absolute -bottom-10 left-12">
-              <div className="group w-28 h-28 rounded-full relative bg-gray-100 border-2 border-white cursor-pointer">
-                <label
-                  htmlFor="avatarFile"
-                  className="absolute flex items-center justify-center w-full h-full group-hover:bg-black/40 z-10 rounded-full transition cursor-pointer"
+        <div className="lg:max-w-screen-md xl:max-w-screen-lg w-full h-full    my-10 flex flex-col justify-center items-center">
+          <div className="bg-white rounded-3xl flex flex-col w-full shadow-lg">
+            <div className="relative w-full h-44 rounded-3xl bg-gradient-to-r from-violet-200 to-pink-200">
+              <div className="absolute -bottom-10 left-12">
+                <div className="group w-28 h-28 rounded-full relative bg-gray-100 border-2 border-white cursor-pointer">
+                  <label
+                    htmlFor="avatarFile"
+                    className="absolute flex items-center justify-center w-full h-full group-hover:bg-black/40 z-10 rounded-full transition cursor-pointer"
+                  >
+                    <BiEdit className="text-3xl text-white hidden group-hover:block" />
+                    <input
+                      type="file"
+                      name="avatarFile"
+                      id="avatarFile"
+                      className="sr-only"
+                      accept="image/*"
+                    />
+                  </label>
+                  {userProfile.data?.image && (
+                    <Image
+                      fill
+                      src={userProfile.data?.image}
+                      alt={userProfile.data?.name ?? ''}
+                      className="rounded-full"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="mt-10 ml-12 flex flex-col space-y-0.5 rounded-b-3xl py-4">
+              <div className="text-4xl font-semibold text-gray-800">{userProfile.data?.name}</div>
+              <div className="text-gray-600">@{userProfile.data?.username}</div>
+              <div className="text-gray-600">{userProfile.data?._count.posts} Posts</div>
+              <div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href)
+                    toast.success('URL copied to clipboard');
+                  }}
+                  className="flex items-center space-x-3 mt-2 rounded border border-gray-200 px-4 py-2 transition hover:border-gray-900 hover:text-gray-900 active:scale-95"
                 >
-                  <BiEdit className="text-3xl text-white hidden group-hover:block" />
-                  <input
-                    type="file"
-                    name="avatarFile"
-                    id="avatarFile"
-                    className="sr-only"
-                    accept="image/*"
-                  />
-                </label>
-                {userProfile.data?.image && (
-                  <Image
-                    fill
-                    src={userProfile.data?.image}
-                    alt={userProfile.data?.name ?? ''}
-                    className="rounded-full"
-                  />
-                )}
+                  <div>Share</div>
+                  <div>
+                    <SlShareAlt className="text-gray-600" />
+                  </div>
+                </button>
               </div>
             </div>
           </div>
-          <div>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque, magni?
+
+          <div className="my-10 w-full">
+            {userPosts.isSuccess && userPosts.data?.posts.map((post) => (
+              <Post
+                key={post.id}
+                {...post}
+              />
+            ))}
+
           </div>
         </div>
       </div>

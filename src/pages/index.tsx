@@ -1,6 +1,5 @@
 import Main from "../components/Main";
 import MainLayout from "../layouts/MainLayout";
-import WriteFormModal from "../components/WriteFormModal";
 import Side from "../components/Side";
 
 const HomePage = () => {
@@ -15,8 +14,6 @@ const HomePage = () => {
         {/* 右栏 */}
         <Side />
       </section>
-      {/* Modal表单 */}
-      <WriteFormModal />
     </MainLayout>
   );
 };
