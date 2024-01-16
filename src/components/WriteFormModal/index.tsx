@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from 'zod';
@@ -7,8 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import Modal from "../Modal";
-import { GlobalContext } from "../contexts/GlobalContextProvider";
+import TagForm from "../TagForm";
 import { trpc } from "../../utils/trpc";
+import TagModal from "../TagModal";
+import useTagModal from "../../hooks/useTagModal";
 
 type WriteFormType = {
   title: string;
@@ -26,18 +27,18 @@ export const writeFormSchema = z.object({
   text: z.string().min(100)
 })
 
-const WriteFormModal = () => {
+const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: { isWriteModalOpen: boolean; setIsWriteModalOpen: (isOpen: boolean) => void; }) => {
+  const tagModal = useTagModal();
 
-  // Modal Context
-  const { isWriteModalOpen, setIsWriteModalOpen } = useContext(GlobalContext);
+  const utils = trpc.useUtils();
 
-  // react-hook-form (errors为二次解构)
+  /**
+   * @desc 创建post表单
+   */
   const { register, handleSubmit, formState: { errors }, reset } = useForm<WriteFormType>({
     resolver: zodResolver(writeFormSchema)
   });
 
-
-  const utils = trpc.useUtils();
 
   /**
    * @desc 创建tRPC方法
@@ -54,7 +55,6 @@ const WriteFormModal = () => {
 
   /**
    * @description handleSubmit回调函数，从参数中获取表单输入对象
-   * @param data
    */
   const onSubmit = (data: WriteFormType) => {
     createPost.mutate(data)
@@ -66,6 +66,33 @@ const WriteFormModal = () => {
       isOpen={isWriteModalOpen}
       onClose={() => setIsWriteModalOpen(false)}
     >
+
+      {/* Tag Form Modal */}
+      {/* 由于headless UI dialog设定，嵌套dialog要想获得正确的关闭顺序行为，需要嵌套Modal组件使用 */}
+      <TagModal />
+
+      <div className="flex w-full space-x-4 items-center my-4">
+        <div className="w-4/5 z-10">
+          <TagForm />
+        </div>
+        <button
+          onClick={() => tagModal.onOpen()}
+          className="
+              space-x-3
+              text-sm
+              rounded
+              border
+              border-gray-200
+              px-4
+              whitespace-nowrap
+              py-2
+              transition
+              hover:border-gray-900
+              hover:text-gray-900"
+        >
+          Create Tag
+        </button>
+      </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -145,6 +172,7 @@ const WriteFormModal = () => {
         </div>
 
       </form>
+
     </Modal>
   );
 }

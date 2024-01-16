@@ -3,7 +3,7 @@ import { createContext, useState } from "react";
 
 type GlobalContextType = {
   isWriteModalOpen: boolean;
-  setIsWriteModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setIsWriteModalOpen: (isOpen: boolean) => void;
 };
 
 
@@ -12,7 +12,12 @@ const GlobalContextProvider = ({ children }: React.PropsWithChildren) => {
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
   return (
-    <GlobalContext.Provider value={{ isWriteModalOpen, setIsWriteModalOpen }}>
+    <GlobalContext.Provider
+      value={{
+        isWriteModalOpen,
+        setIsWriteModalOpen
+      }}
+    >
       {children}
     </GlobalContext.Provider>
   );
