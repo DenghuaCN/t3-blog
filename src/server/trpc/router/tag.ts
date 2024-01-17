@@ -8,11 +8,19 @@ import { tagFormSchema } from "../../../components/TagModal";
 
 export const tagRouter = router({
   /**
-   * 创建标签
+   * @desc 获取标签
+   */
+  getTags: protectedProcedure
+    .query(async ({ ctx: { prisma } }) => {
+      return await prisma.tag.findMany();
+    }),
+
+  /**
+   * @desc 创建标签
    */
   createTag: protectedProcedure
     .input(tagFormSchema)
-    .mutation(async ({ ctx: { prisma, session }, input }) => {
+    .mutation(async ({ ctx: { prisma }, input }) => {
 
       const tag = await prisma.tag.findUnique({
         where: {
@@ -35,5 +43,5 @@ export const tagRouter = router({
           slug: slugify(input.name)
         }
       })
-    })
+    }),
 })

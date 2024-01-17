@@ -1,6 +1,7 @@
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import { z } from 'zod';
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -16,6 +17,10 @@ type WriteFormType = {
   description: string;
   text: string;
 }
+type WriteFormModalProps = {
+  isWriteModalOpen: boolean;
+  setIsWriteModalOpen: (isOpen: boolean) => void;
+}
 
 /**
  * @desc 使用zod进行运行时的类型检查
@@ -27,7 +32,7 @@ export const writeFormSchema = z.object({
   text: z.string().min(100)
 })
 
-const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: { isWriteModalOpen: boolean; setIsWriteModalOpen: (isOpen: boolean) => void; }) => {
+const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModalProps) => {
   const tagModal = useTagModal();
 
   const utils = trpc.useUtils();
@@ -39,9 +44,8 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: { isWriteModa
     resolver: zodResolver(writeFormSchema)
   });
 
-
   /**
-   * @desc 创建tRPC方法
+   * @desc 调用"创建Tag"过程
    */
   const createPost = trpc.post.createPost.useMutation({
     onSuccess: () => {
@@ -54,12 +58,19 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: { isWriteModa
   })
 
   /**
+   * @desc 调用"获取所有tag"过程
+   */
+  const getTags = trpc.tag.getTags.useQuery();
+
+
+  const [selectTagId, setSelectTagId] = useState('');
+  /**
    * @description handleSubmit回调函数，从参数中获取表单输入对象
    */
   const onSubmit = (data: WriteFormType) => {
-    createPost.mutate(data)
+    const mutationData = selectTagId ? { ...data, tagId: selectTagId } : data;
+    createPost.mutate(mutationData)
   }
-
 
   return (
     <Modal
@@ -67,32 +78,29 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: { isWriteModa
       onClose={() => setIsWriteModalOpen(false)}
     >
 
-      {/* Tag Form Modal */}
-      {/* 由于headless UI dialog设定，嵌套dialog要想获得正确的关闭顺序行为，需要嵌套Modal组件使用 */}
-      <TagModal />
 
-      <div className="flex w-full space-x-4 items-center my-4">
-        <div className="w-4/5 z-10">
-          <TagForm />
-        </div>
-        <button
-          onClick={() => tagModal.onOpen()}
-          className="
-              space-x-3
-              text-sm
-              rounded
-              border
-              border-gray-200
-              px-4
-              whitespace-nowrap
-              py-2
-              transition
-              hover:border-gray-900
-              hover:text-gray-900"
-        >
-          Create Tag
-        </button>
-      </div>
+      {getTags.isSuccess && (
+        <>
+          {/* Tag Create Form Modal */}
+          {/* 由于headless UI dialog设定，嵌套dialog要想获得正确的关闭顺序行为，需要嵌套Modal组件使用 */}
+          <TagModal />
+
+          {/* Tag Select */}
+          <div className="flex w-full space-x-4 items-center my-4">
+            <div className="w-4/5 z-10">
+              <TagForm
+                tags={getTags.data}
+                setSelectTagId={setSelectTagId}
+              />
+            </div>
+            <button
+              onClick={() => tagModal.onOpen()}
+              className="space-x-3 text-sm rounded border border-gray-200 px-4 whitespace-nowrap py-2 transition hover:border-gray-900 hover:text-gray-900">
+              Create Tag
+            </button>
+          </div>
+        </>
+      )}
 
       <form
         onSubmit={handleSubmit(onSubmit)}

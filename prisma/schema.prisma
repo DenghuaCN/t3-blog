@@ -72,6 +72,7 @@ model VerificationToken {
 }
 
 // Blog Table/Models
+// https://dbdiagram.io/d/deng-blog-65975ef0ac844320ae4737a3
 model Post {
   id            String  @id @default(cuid())
   title         String  @unique // 唯一标识符，title不能冲突，且需要作为slug

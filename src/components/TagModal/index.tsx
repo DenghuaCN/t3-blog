@@ -20,6 +20,7 @@ export const tagFormSchema = z.object({
 
 const TagModal = () => {
   const tagModal = useTagModal();
+  const utils = trpc.useUtils();
 
   const createTag = trpc.tag.createTag.useMutation({
     onSuccess: () => {
@@ -27,6 +28,7 @@ const TagModal = () => {
       // 重置并关闭
       reset();
       tagModal.onClose();
+      utils.tag.getTags.invalidate();
     }
   });
 

@@ -111,12 +111,15 @@ const Post = ({ ...post }: PostProps) => {
       <div>
         <div className="flex w-full items-center justify-between space-x-4">
           <div className="flex items-center space-x-2">
-            {Array.from({ length: 4 }).map((_, i) => (
+            {post.tags.map((tag) => (
               <div
-                key={i}
-                className="rounded-3xl bg-gray-200/50 px-5 py-2"
+                key={tag.id}
+                onClick={() => {
+                  // todo:渲染这个用户下这个标签的所有post
+                }}
+                className="rounded-3xl bg-gray-200/50 px-5 py-2 cursor-pointer"
               >
-                tag {i}
+                {tag.name}
               </div>
             ))}
           </div>

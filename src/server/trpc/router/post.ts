@@ -13,10 +13,16 @@ export const postRouter = router({
    * @desc 创建Post
    */
   createPost: protectedProcedure
-    .input(writeFormSchema)
+    .input(
+      writeFormSchema.and(
+        z.object({
+          tagId: z.string().optional()
+        })
+      )
+    )
     .mutation(async ({ ctx, input }) => {
       const { prisma, session } = ctx;
-      const { title, description, text } = input;
+      const { title, description, text, tagId } = input;
 
       // 根据title区分是否创建过相同的post
       const isExistSamePost = await prisma.post.findUnique({
@@ -43,6 +49,11 @@ export const postRouter = router({
             connect: {
               // https://www.prisma.io/docs/orm/reference/prisma-client-reference#connect
               id: session.user.id
+            }
+          },
+          tags: {
+            connect: {
+              id: tagId
             }
           }
         }
@@ -91,6 +102,13 @@ export const postRouter = router({
               name: true,
               image: true,
               username: true
+            }
+          },
+          tags: {
+            select: {
+              name: true,
+              id: true,
+              slug: true,
             }
           },
           /**
