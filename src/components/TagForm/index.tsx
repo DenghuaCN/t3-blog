@@ -5,18 +5,17 @@ import { HiChevronUpDown } from 'react-icons/hi2'
 
 import type { Dispatch, SetStateAction } from 'react'
 
-type Tag = { id: string, name: string }
+export type Tag = { id: string, name: string }
 type TagFormProps = {
   tags: Tag[];
-  setSelectTagId: Dispatch<SetStateAction<string>>
+  selectedTags: Tag[];
+  setSelectedTags: Dispatch<SetStateAction<Tag[]>>
 }
 
-export default function TagForm({ tags, setSelectTagId }: TagFormProps) {
+export default function TagForm({ tags, setSelectedTags, selectedTags }: TagFormProps) {
 
-  const [selected, setSelected] = useState(tags[0])
+  const [selected, setSelected] = useState(tags[0]) // 默认显示tags第一项
   const [query, setQuery] = useState('')
-
-
 
   /**
    * @description 标签模糊搜索，并节省计算
@@ -26,20 +25,22 @@ export default function TagForm({ tags, setSelectTagId }: TagFormProps) {
       tag.name
         .toLowerCase()
         .replace(/\s+/g, '')
-        .includes( query.toLowerCase().replace(/\s+/g, ''))
+        .includes(query.toLowerCase().replace(/\s+/g, ''))
     )
   }, [query, tags])
 
 
   return (
-    <Combobox value={selected} onChange={(value) => {
-      setSelected(value)
-      setSelectTagId(value.id)
+    <Combobox value={selected} onChange={(tag) => {
+      setSelected(tag)
+      setSelectedTags((prev) => (
+        Array.from(new Set([...prev, tag])) // 去重
+      ))
     }}>
-      <div className="relative mt-1">
+      <div className="relative mt-1 border-none">
         <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-300 sm:text-sm">
           <Combobox.Input
-            className="w-full border-none py-2 outline-none pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+            className="w-full py-2 outline-none pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0 border-red-500"
             displayValue={(tag: Tag) => tag.name}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -74,17 +75,13 @@ export default function TagForm({ tags, setSelectTagId }: TagFormProps) {
                 >
                   {({ selected, active }) => (
                     <>
-                      <span
-                        className={`block truncate ${selected ? 'font-medium' : 'font-normal'
-                          }`}
-                      >
+                      <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                         {tag.name}
                       </span>
-                      {selected ? (
-                        <span
-                          className={`absolute inset-y-0 left-0 flex items-center pl-3 ${active ? 'text-white' : 'text-gray-600'
-                            }`}
-                        >
+
+                      {/* 如果已选tags数组包含此tag，则显示checked标记 */}
+                      {selectedTags.includes(tag) ? (
+                        <span className={`absolute inset-y-0 left-0 flex items-center pl-3 ${active ? 'text-white' : 'text-gray-600'}`}>
                           <HiCheck className="h-5 w-5" aria-hidden="true" />
                         </span>
                       ) : null}

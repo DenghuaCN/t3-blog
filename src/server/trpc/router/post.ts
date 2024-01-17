@@ -15,14 +15,20 @@ export const postRouter = router({
   createPost: protectedProcedure
     .input(
       writeFormSchema.and(
+        // tagIds : [{ id: string }]
         z.object({
-          tagId: z.string().optional()
+          tagsIds: z.array(
+            z.object({
+              id: z.string()
+            })
+          )
+          .optional()
         })
       )
     )
     .mutation(async ({ ctx, input }) => {
       const { prisma, session } = ctx;
-      const { title, description, text, tagId } = input;
+      const { title, description, text, tagsIds } = input;
 
       // 根据title区分是否创建过相同的post
       const isExistSamePost = await prisma.post.findUnique({
@@ -52,9 +58,8 @@ export const postRouter = router({
             }
           },
           tags: {
-            connect: {
-              id: tagId
-            }
+            // connect multiple record: https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#connect-multiple-records
+            connect: tagsIds
           }
         }
       })

@@ -2,15 +2,18 @@ import { z } from 'zod';
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod"
-
+import { FaTimes } from 'react-icons/fa';
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
+import { zodResolver } from "@hookform/resolvers/zod"
 
 import Modal from "../Modal";
 import TagForm from "../TagForm";
 import { trpc } from "../../utils/trpc";
 import TagModal from "../TagModal";
 import useTagModal from "../../hooks/useTagModal";
+
+import type { Tag } from '../TagForm';
 
 type WriteFormType = {
   title: string;
@@ -33,9 +36,9 @@ export const writeFormSchema = z.object({
 })
 
 const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModalProps) => {
+  const utils = trpc.useUtils();
   const tagModal = useTagModal();
 
-  const utils = trpc.useUtils();
 
   /**
    * @desc 创建post表单
@@ -63,13 +66,14 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
   const getTags = trpc.tag.getTags.useQuery();
 
 
-  const [selectTagId, setSelectTagId] = useState('');
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   /**
    * @description handleSubmit回调函数，从参数中获取表单输入对象
    */
   const onSubmit = (data: WriteFormType) => {
-    const mutationData = selectTagId ? { ...data, tagId: selectTagId } : data;
-    createPost.mutate(mutationData)
+    createPost.mutate(
+      selectedTags.length > 0 ? { ...data, tagsIds: selectedTags } : data
+    )
   }
 
   return (
@@ -90,7 +94,8 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
             <div className="w-4/5 z-10">
               <TagForm
                 tags={getTags.data}
-                setSelectTagId={setSelectTagId}
+                selectedTags={selectedTags}
+                setSelectedTags={setSelectedTags}
               />
             </div>
             <button
@@ -98,6 +103,25 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
               className="space-x-3 text-sm rounded border border-gray-200 px-4 whitespace-nowrap py-2 transition hover:border-gray-900 hover:text-gray-900">
               Create Tag
             </button>
+          </div>
+          <div className='w-full flex items-center flex-wrap my-4'>
+            {selectedTags.map((tag) => (
+                <div
+                  key={tag.id}
+                  className="m-1 rounded-3xl bg-gray-200/50 px-5 py-2 whitespace-nowrap flex justify-center items-center space-x-2"
+                >
+                  <div>{tag.name}</div>
+                  {/* 删除已选tag */}
+                  <div
+                    onClick={() => setSelectedTags((prev) => (
+                      prev.filter((currentTag) => currentTag.id !== tag.id)
+                    ))}
+                    className='cursor-pointer text-xs'
+                  >
+                    <FaTimes />
+                  </div>
+                </div>
+              ))}
           </div>
         </>
       )}
