@@ -5,18 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-
 import { CiBookmarkPlus } from "react-icons/ci";
 import { CiBookmarkCheck } from "react-icons/ci";
-
 import { trpc } from "../../utils/trpc";
-
 import type { RouterOutputs } from "../../utils/trpc";
 
 type PostProps = RouterOutputs['post']['getPosts'][number]
 
-
 const Post = ({ ...post }: PostProps) => {
+  const utils = trpc.useUtils();
   const [isBookMarked, setIsBookMarked] = useState(Boolean(post.bookmarks?.length));
 
   const addBookmarkRPC = trpc.post.bookmarkPost.useMutation();
@@ -32,7 +29,8 @@ const Post = ({ ...post }: PostProps) => {
     toast.promise(addBookmarkPromise, {
       loading: 'Loading...',
       success: () => {
-        setIsBookMarked((prev) => !prev)
+        setIsBookMarked((prev) => !prev);
+        utils.post.getReadingList.invalidate();
         return '书签已添加'
       },
       error: 'add bookmark fail',
@@ -48,7 +46,8 @@ const Post = ({ ...post }: PostProps) => {
     toast.promise(removeBookmarkPromise, {
       loading: 'Loading...',
       success: () => {
-        setIsBookMarked((prev) => !prev)
+        setIsBookMarked((prev) => !prev);
+        utils.post.getReadingList.invalidate();
         return '书签已移除'
       },
       error: 'remove bookmark fail',
@@ -103,7 +102,16 @@ const Post = ({ ...post }: PostProps) => {
 
         {/* 右栏 (封面图) */}
         <div className="col-span-4">
-          <div className="h-full w-full transform rounded-xl bg-gray-300 transition duration-300 hover:scale-105 hover:shadow-xl"></div>
+          <div className="h-full w-full transform rounded-xl bg-gray-300 transition duration-300 hover:scale-105 hover:shadow-xl">
+            {post.featuredImage && (
+              <Image
+                fill
+                src={post?.featuredImage}
+                alt={post?.title}
+                className="rounded-xl"
+              />
+            )}
+          </div>
         </div>
       </Link>
 

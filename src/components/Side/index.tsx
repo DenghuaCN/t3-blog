@@ -66,7 +66,16 @@ const Side = () => {
               className="group flex items-center space-x-6"
             >
               {/* article cover */}
-              <div className="aspect-square h-full w-2/5 rounded-xl bg-gray-300"></div>
+              <div className="relative aspect-video w-2/5 rounded-xl bg-gray-300">
+                {bookmark.post.featuredImage && (
+                  <Image
+                    fill
+                    src={bookmark.post.featuredImage}
+                    alt={bookmark.post.title}
+                    className="rounded-xl"
+                  />
+                )}
+              </div>
               <div className="flex w-3/5 flex-col space-y-2">
                 {/* title */}
                 <div className="text-lg font-semibold decoration-gray-800 group-hover:underline">
@@ -80,8 +89,6 @@ const Side = () => {
                     {bookmark.post.author.image && (
                       <Image
                         fill
-                        // width="32"
-                        // height="32"
                         className="rounded-full"
                         src={bookmark.post.author.image}
                         alt={bookmark.post.author.name ?? ''}

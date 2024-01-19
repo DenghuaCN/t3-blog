@@ -82,7 +82,6 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
       onClose={() => setIsWriteModalOpen(false)}
     >
 
-
       {getTags.isSuccess && (
         <>
           {/* Tag Create Form Modal */}

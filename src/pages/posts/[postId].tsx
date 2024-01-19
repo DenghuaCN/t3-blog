@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
+import { useCallback, useState } from "react";
 
+import { BiImageAdd } from "react-icons/bi";
 import { BsChat } from "react-icons/bs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FcLike, FcLikePlaceholder } from "react-icons/fc";
@@ -8,10 +9,17 @@ import { FcLike, FcLikePlaceholder } from "react-icons/fc";
 import { trpc } from "../../utils/trpc";
 import MainLayout from "../../layouts/MainLayout";
 import CommentSidebar from "../../components/CommentSidebar";
+import UnsplashModal from "../../components/UnsplashModal";
+import useUnsplashModal from "../../hooks/useUnsplashModal";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 const PostPage = () => {
+
+  const unSplashModal = useUnsplashModal();
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { data: sessionData } = useSession();
 
   const [isShowCommentBar, setIsShowCommentBar] = useState(false);
 
@@ -112,20 +120,51 @@ const PostPage = () => {
 
       <div className="flex h-full w-full flex-col items-center justify-center p-10">
         <div className="w-full max-w-screen-lg flex flex-col space-y-6">
-          <div className="relative h-[60vh] w-full rounded-xl bg-gray-300 shadow-lg">
-            {/* here we will render our image */}
+          <div className="relative h-[50vh] w-full rounded-xl bg-gray-300 shadow-lg">
+
+            {/* add unsplash image button */}
+            {(sessionData?.user?.id === postData?.authorId) && (
+              // 确保当前登陆用户为post的owner，才会显示更改背景图片按钮
+              <div
+                onClick={unSplashModal.onOpen}
+                className="absolute top-2 left-2 bg-black/30 p-2 text-white rounded-lg hover:bg-black z-10 cursor-pointer"
+              >
+                <BiImageAdd className="text-2xl relative left-[1px] top-[0.5px]" />
+              </div>
+            )}
+
+            {/* 标题封面 */}
+            {isSuccess && postData?.featuredImage && (
+              <Image
+                fill
+                src={postData?.featuredImage}
+                alt={postData?.title}
+                className="rounded-xl"
+              />
+            )}
+
+            {/* 博文标题 */}
             <div className="absolute w-full h-full flex items-center justify-center">
               <div className="bg-black bg-opacity-50 p-4 rounded-xl text-white text-3xl">{postData?.title}</div>
             </div>
           </div>
+          {/* 博文描述 */}
           <div className="border-l-4 pl-6 border-gray-800">
             {postData?.description}
           </div>
+
+          {/* 正文 */}
           <div>
             {postData?.text}
           </div>
         </div>
       </div>
+
+      {/* Unsplash Modal */}
+      {isSuccess && (
+        <UnsplashModal postId={postData?.id as string} refreshPost={invalidateCurrentPage} />
+      )}
+
     </MainLayout>
   );
 };

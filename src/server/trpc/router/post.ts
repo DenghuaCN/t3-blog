@@ -22,7 +22,7 @@ export const postRouter = router({
               id: z.string()
             })
           )
-          .optional()
+            .optional()
         })
       )
     )
@@ -102,6 +102,7 @@ export const postRouter = router({
           description: true,
           text: true,
           createdAt: true,
+          featuredImage: true,
           author: {
             select: {
               name: true,
@@ -154,6 +155,8 @@ export const postRouter = router({
           description: true,
           title: true,
           text: true,
+          authorId: true,
+          featuredImage: true,
           likes: session?.user?.id ? {
             /**
              * 用户已登陆时才会获取likes字段信息，减少查询
@@ -341,6 +344,7 @@ export const postRouter = router({
               title: true,
               description: true,
               createdAt: true,
+              featuredImage: true,
               author: { // 选择user表(author关系)中的name和image字段
                 select: {
                   name: true,
@@ -353,5 +357,43 @@ export const postRouter = router({
       })
 
       return allBookmarks;
+    }),
+
+  /**
+   * @desc 更新post标题背景图
+   */
+  updatePostFeaturedImage: protectedProcedure
+    .input(
+      z.object({
+        imageUrl: z.string().url(),
+        postId: z.string()
+      })
+    )
+    .mutation(async ({ ctx: { prisma, session }, input }) => {
+      const { imageUrl, postId } = input;
+
+      // 判断当前登录用户是否是post的所有者
+      const postData = await prisma.post.findUnique({
+        where: {
+          id: postId
+        }
+      })
+      if (postData?.authorId !== session.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'you are not owner of this post.'
+        })
+      }
+
+      await prisma.post.update({
+        where: {
+          id: postId
+        },
+        data: {
+          featuredImage: imageUrl
+        }
+      })
+
     })
+
 })
