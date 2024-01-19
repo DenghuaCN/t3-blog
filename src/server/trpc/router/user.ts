@@ -70,6 +70,14 @@ export const userRouter = router({
               description: true,
               text: true,
               createdAt: true,
+              featuredImage: true,
+              tags: {
+                select: {
+                  name: true,
+                  id: true,
+                  slug: true,
+                }
+              },
               author: {
                 select: {
                   name: true,

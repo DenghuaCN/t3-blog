@@ -119,7 +119,7 @@ const Post = ({ ...post }: PostProps) => {
       <div>
         <div className="flex w-full items-center justify-between space-x-4">
           <div className="flex items-center space-x-2">
-            {post.tags.map((tag) => (
+            {post?.tags && post.tags.map((tag) => (
               <div
                 key={tag.id}
                 onClick={() => {
