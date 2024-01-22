@@ -166,5 +166,104 @@ export const userRouter = router({
       })
 
 
+    }),
+
+  /**
+   * @desc 获取用户感兴趣的post
+   */
+  getSuggestions: protectedProcedure
+    .query(async ({ ctx: { prisma, session } }) => {
+
+      /**
+       * 我们需要一组用户。这些用户应该喜欢将当前用户相同的帖子添加为书签或点赞。
+       * 首先获取当前用户的点赞和收藏
+       */
+      const query = {
+        where: {
+          // 注意查的点赞表和书签表里的userId，不是uuid
+          userId: session.user.id,
+        },
+        select: {
+          post: {
+            select: {
+              tags: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          }
+        },
+        take: 10
+      }
+
+      const likedPostTags = await prisma.like.findMany(query); // 根据当前登录用户id找到点赞集合，从这些点赞中找到对应的post，再找到对应post的tags
+      const bookmarkedPostTags = await prisma.bookmark.findMany(query) // 根据当前登录用户id找到书签集合，从这些书签中找到对应的post，再找到对应post的tags
+
+      const interestedTags: string[] = [];
+
+      // 被点赞的post的tags
+      likedPostTags.forEach((like) => {
+        const tagNameArr: string[] = like.post.tags.map(tag => tag.name);
+        interestedTags.push(...tagNameArr);
+      })
+      // 被书签的post的tags
+      bookmarkedPostTags.forEach((bookmark) => {
+        const tagNameArr: string[] = bookmark.post.tags.map(tag => tag.name);
+        interestedTags.push(...tagNameArr);
+      })
+
+      /**
+       * @desc 一些用户，这些用户点赞或者收藏了 -> 当前用户喜欢或者收藏的post
+       */
+      const suggestions = await prisma.user.findMany({
+        where: {
+          OR: [
+            {
+              likes: { // 这个user的所有点赞
+                some: {
+                  post: { // 点赞的post
+                    tags: { // post的所有标签中
+                      some: {
+                        name: { // 某些标签在 -> 当前登录用户点赞的post的标签数组中
+                          in: interestedTags
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              bookmarks: { // 这个user的所有书签
+                some: {
+                  post: { // 书签对应的post
+                    tags: { // post的所有标签中
+                      some: {
+                        name: { // 某些标签在 -> 当前登录用户收藏的post的标签数组中
+                          in: interestedTags
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          NOT: {
+            id: session.user.id // 检索范围不包括当前用户
+          }
+        },
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          username: true,
+        },
+        take: 4 // 需要的记录的数量
+      })
+
+      return suggestions;
+
     })
 })

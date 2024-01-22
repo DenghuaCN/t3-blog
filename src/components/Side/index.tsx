@@ -11,6 +11,11 @@ const Side = () => {
    */
   const readingList = trpc.post.getReadingList.useQuery();
 
+  /**
+   * @desc ‘getSuggestions’过程调用
+   */
+  const suggestions = trpc.user.getSuggestions.useQuery();
+
   return (
     <aside className="col-span-4 flex h-full w-full flex-col space-y-4 p-6">
       {/* 可能感兴趣的用户 */}
@@ -19,18 +24,25 @@ const Side = () => {
           People you might be interested
         </h3>
         <div className="flex flex-col space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex flex-row items-center space-x-5">
-              <div className="h-10 w-10 flex-none rounded-full bg-gray-300"></div>
+          {suggestions.isSuccess && suggestions.data.map((user) => (
+            <div key={user.id} className="flex flex-row items-center space-x-5">
+              {/* Avatar */}
+              <div className="relative h-10 w-10 flex-none rounded-full bg-gray-300">
+                {user.image && (
+                  <Image
+                    fill
+                    src={user.image}
+                    alt={user.username}
+                    className="rounded-full"
+                  />
+                )}
+              </div>
 
               <div>
-                <div className="text-sm font-bold text-gray-900">
-                  John Doe
-                </div>
-                <div className="text-xs">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Repellat, itaque ea. Tenetur, dolore?
-                </div>
+                {/* name */}
+                <div className="text-sm font-bold text-gray-900">{user.name}</div>
+                {/* username */}
+                <div className="text-xs">{user.username}</div>
               </div>
 
               <div>
@@ -55,6 +67,7 @@ const Side = () => {
           ))}
         </div>
       </div>
+
       {/* 阅读列表 */}
       <div className="sticky top-2">
         <h3 className="my-6 text-lg font-semibold">Your reading list</h3>
