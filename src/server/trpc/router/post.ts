@@ -28,7 +28,7 @@ export const postRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { prisma, session } = ctx;
-      const { title, description, text, tagsIds } = input;
+      const { title, description, text, tagsIds, html } = input;
 
       // 根据title区分是否创建过相同的post
       const isExistSamePost = await prisma.post.findUnique({
@@ -49,6 +49,7 @@ export const postRouter = router({
           title,
           description,
           text,
+          html,
           slug: slugify(title),
           // authorId: session.user.id // 不能将session.user.id直接赋值给authorId，Post与User表是一对多关系，通过connect连接
           author: {
@@ -155,6 +156,7 @@ export const postRouter = router({
           description: true,
           title: true,
           text: true,
+          html: true,
           authorId: true,
           featuredImage: true,
           likes: session?.user?.id ? {
@@ -167,7 +169,6 @@ export const postRouter = router({
           } : false
         }
       })
-
       return post;
     }
     ),

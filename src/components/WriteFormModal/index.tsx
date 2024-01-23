@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import dynamic from 'next/dynamic';
+import { Controller, useForm } from "react-hook-form";
 import { FaTimes } from 'react-icons/fa';
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-
 import { zodResolver } from "@hookform/resolvers/zod"
+import 'react-quill/dist/quill.snow.css';
 
 import Modal from "../Modal";
 import TagForm from "../TagForm";
@@ -15,10 +16,16 @@ import useTagModal from "../../hooks/useTagModal";
 
 import type { Tag } from '../TagForm';
 
+// 使用富文本编辑器无法使用服务端渲染
+const ReactQuill = dynamic(() => import('react-quill'), {
+  ssr: false
+})
+
 type WriteFormType = {
   title: string;
   description: string;
   text: string;
+  html: string;
 }
 type WriteFormModalProps = {
   isWriteModalOpen: boolean;
@@ -32,7 +39,8 @@ type WriteFormModalProps = {
 export const writeFormSchema = z.object({
   title: z.string().min(20),
   description: z.string().min(50),
-  text: z.string().min(100)
+  text: z.string().min(100).optional(),
+  html: z.string().min(100),
 })
 
 const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModalProps) => {
@@ -43,7 +51,7 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
   /**
    * @desc 创建post表单
    */
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<WriteFormType>({
+  const { register, handleSubmit, formState: { errors }, reset, control } = useForm<WriteFormType>({
     resolver: zodResolver(writeFormSchema)
   });
 
@@ -105,28 +113,30 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
           </div>
           <div className='w-full flex items-center flex-wrap my-4'>
             {selectedTags.map((tag) => (
+              <div
+                key={tag.id}
+                className="m-1 rounded-3xl bg-gray-200/50 px-5 py-2 whitespace-nowrap flex justify-center items-center space-x-2"
+              >
+                <div>{tag.name}</div>
+                {/* 删除已选tag */}
                 <div
-                  key={tag.id}
-                  className="m-1 rounded-3xl bg-gray-200/50 px-5 py-2 whitespace-nowrap flex justify-center items-center space-x-2"
+                  onClick={() => setSelectedTags((prev) => (
+                    prev.filter((currentTag) => currentTag.id !== tag.id)
+                  ))}
+                  className='cursor-pointer text-xs'
                 >
-                  <div>{tag.name}</div>
-                  {/* 删除已选tag */}
-                  <div
-                    onClick={() => setSelectedTags((prev) => (
-                      prev.filter((currentTag) => currentTag.id !== tag.id)
-                    ))}
-                    className='cursor-pointer text-xs'
-                  >
-                    <FaTimes />
-                  </div>
+                  <FaTimes />
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </>
       )}
 
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit((data) => {
+          onSubmit(data);
+        })}
         className="flex relative flex-col space-y-4 justify-center items-center"
       >
 
@@ -173,22 +183,20 @@ const WriteFormModal = ({ isWriteModalOpen, setIsWriteModalOpen }: WriteFormModa
         />
         <p className="w-full text-left text-sm text-red-500 pb-2">{errors.description?.message}</p>
 
-        <textarea
-          {...register('text')}
-          name="text"
-          placeholder="blog main body..."
-          cols={10}
-          rows={10}
-          className="
-            w-full
-            h-full
-            border
-            border-gray-300
-            focus:border-gray-600
-            outline-none
-            p-4
-            rounded-xl
-          "
+        <Controller
+          name='html'
+          control={control}
+          render={({ field }) => (
+            <div className='w-full'>
+              <ReactQuill
+                {...field}
+                placeholder='Write blog body is here...'
+                theme="snow"
+                value={field.value}
+                onChange={(value) => field.onChange(value)}
+              />
+            </div>
+          )}
         />
         <p className="w-full text-left text-sm text-red-500 pb-2">{errors.text?.message}</p>
 

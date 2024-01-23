@@ -1,5 +1,8 @@
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import sanitizeHtml from 'sanitize-html';
 
 import { BiImageAdd } from "react-icons/bi";
 import { BsChat } from "react-icons/bs";
@@ -11,15 +14,13 @@ import MainLayout from "../../layouts/MainLayout";
 import CommentSidebar from "../../components/CommentSidebar";
 import UnsplashModal from "../../components/UnsplashModal";
 import useUnsplashModal from "../../hooks/useUnsplashModal";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
 
 const PostPage = () => {
 
+  const { data: sessionData } = useSession();
   const unSplashModal = useUnsplashModal();
   const router = useRouter();
   const utils = trpc.useUtils();
-  const { data: sessionData } = useSession();
 
   const [isShowCommentBar, setIsShowCommentBar] = useState(false);
 
@@ -154,8 +155,13 @@ const PostPage = () => {
           </div>
 
           {/* 正文 */}
-          <div>
-            {postData?.text}
+          <div
+            // https://tailwindcss.com/docs/typography-plugin#adding-custom-color-themes
+            className="prose lg:prose"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(postData?.html as string)
+            }}
+          >
           </div>
         </div>
       </div>
