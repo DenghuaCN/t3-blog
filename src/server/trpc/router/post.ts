@@ -1,12 +1,14 @@
 // post.ts用于处理Post相关操作的路由
 import { z } from 'zod';
 import slugify from 'slugify';
+import { randomUUID } from 'crypto';
 
 import { TRPCError } from '@trpc/server';
 
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { writeFormSchema } from "../../../components/WriteFormModal";
 
+const LIMIT = 10;
 
 export const postRouter = router({
   /**
@@ -50,7 +52,7 @@ export const postRouter = router({
           description,
           text,
           html,
-          slug: slugify(title),
+          slug: slugify(title) ? slugify(title) : randomUUID(),
           // authorId: session.user.id // 不能将session.user.id直接赋值给authorId，Post与User表是一对多关系，通过connect连接
           author: {
             connect: {
@@ -72,8 +74,15 @@ export const postRouter = router({
    * 此过程不需要protected，故使用publicProcedure
    */
   getPosts: publicProcedure
-    .query(async ({ ctx }) => {
+    .input(
+      z.object({
+        cursor: z.string().nullish(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
       const { prisma, session } = ctx;
+      const { cursor } = input;
+
       const posts = await prisma.post.findMany({
         orderBy: {
           createdAt: "desc"
@@ -127,10 +136,20 @@ export const postRouter = router({
               userId: session?.user?.id
             }
           } : false,
-        }
+        },
+        // tRPC https://trpc.io/docs/client/react/useInfiniteQuery
+        // 光标分页 https://www.prisma.io/docs/orm/prisma-client/queries/pagination
+        cursor: cursor ? { id: cursor } : undefined,
+        take: LIMIT + 1, // 服务端限制
       });
 
-      return posts;
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (posts.length > LIMIT) {
+        const nextItem = posts.pop();
+        if (nextItem) nextCursor = nextItem.id;
+      }
+
+      return { posts, nextCursor };
     }
     ),
 

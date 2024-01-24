@@ -37,7 +37,7 @@ type WriteFormModalProps = {
  * https://dev.to/jareechang/zod-the-next-biggest-thing-after-typescript-4phh
  */
 export const writeFormSchema = z.object({
-  title: z.string().min(20),
+  title: z.string().min(1),
   description: z.string().min(50),
   text: z.string().min(100).optional(),
   html: z.string().min(100),
