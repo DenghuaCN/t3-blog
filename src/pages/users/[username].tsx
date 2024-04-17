@@ -89,6 +89,7 @@ const UserProfilePage = () => {
       <div className="flex h-full w-full items-center justify-center">
         <div className="lg:max-w-screen-md xl:max-w-screen-lg w-full h-full    my-10 flex flex-col justify-center items-center">
           <div className="bg-white rounded-3xl flex flex-col w-full shadow-lg">
+            {/* https://tailwindcomponents.com/gradient-generator/ */}
             <div className="relative w-full h-44 rounded-3xl bg-gradient-to-r from-violet-200 to-pink-200">
               <div className="absolute -bottom-10 left-12">
                 <div className="group w-28 h-28 rounded-full relative bg-gray-100 border-2 border-white">
